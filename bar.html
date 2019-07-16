@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>dc.js - Bar Chart Example</title>
+    <meta charset="UTF-8" />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://cdnjs.cloudflare.com/ajax/libs/dc/2.1.9/dc.css"
+    />
+  </head>
+
+  <body>
+    <div class="container">
+      <div id="test"></div>
+
+      <script
+        type="text/javascript"
+        src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.js"
+      ></script>
+      <script
+        type="text/javascript"
+        src="https://cdnjs.cloudflare.com/ajax/libs/crossfilter2/1.4.3/crossfilter.js"
+      ></script>
+      <script
+        type="text/javascript"
+        src="https://cdnjs.cloudflare.com/ajax/libs/dc/2.1.9/dc.js"
+      ></script>
+      <script type="text/javascript">
+        var chart = dc.barChart('#test');
+        d3.csv('morley.csv', function(error, experiments) {
+          experiments.forEach(function(x) {
+            x.Speed = +x.Speed;
+          });
+          var ndx = crossfilter(experiments),
+            runDimension = ndx.dimension(function(d) {
+              return +d.Expt;
+            }),
+            speedSumGroup = runDimension.group().reduceSum(function(d) {
+              return (d.Speed * d.Run) / 1000;
+            });
+          chart
+            .dimension(runDimension)
+            .group(speedSumGroup)
+            .width(768)
+            .height(480)
+            .brushOn(false)
+            .x(d3.scale.linear().domain([1, 6]))
+            .margins({ top: 10, right: 50, bottom: 30, left: 80 })
+            .yAxisLabel('Esta es una etiqueta para el eje Y', 22)
+            .on('renderlet', function(chart) {
+              chart.selectAll('rect').on('click', function(d) {
+                console.log('click!', d);
+                d3.select(this).style('fill', 'red');
+              });
+            });
+          chart
+            .xAxis()
+            .tickValues([1, 2, 3, 4, 5, 6])
+            .tickFormat(d3.format('d'));
+          chart.yAxis().tickFormat(d3.format('.4f'));
+
+          chart.render();
+          // dc.renderAll();
+        });
+      </script>
+    </div>
+  </body>
+</html>
