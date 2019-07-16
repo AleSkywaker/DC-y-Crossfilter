@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>dc.js - Pie Chart Example</title>
+    <meta charset="UTF-8" />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://cdnjs.cloudflare.com/ajax/libs/dc/2.1.9/dc.css"
+    />
+  </head>
+
+  <body>
+    <div class="container">
+      <div id="test"></div>
+
+      <script
+        type="text/javascript"
+        src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.js"
+      ></script>
+      <script
+        type="text/javascript"
+        src="https://cdnjs.cloudflare.com/ajax/libs/crossfilter2/1.4.3/crossfilter.js"
+      ></script>
+      <script
+        type="text/javascript"
+        src="https://cdnjs.cloudflare.com/ajax/libs/dc/2.1.9/dc.js"
+      ></script>
+      <script type="text/javascript">
+        var chart = dc.pieChart('#test');
+        d3.csv('morley.csv', function(error, experiments) {
+          experiments.forEach(function(x) {
+            x.Speed = +x.Speed;
+          });
+          var ndx = crossfilter(experiments),
+            runDimension = ndx.dimension(function(d) {
+              return +d.Run;
+              // return 'run-' + d.Run;
+            }),
+            speedSumGroup = runDimension.group().reduceSum(function(d) {
+              return d.Speed * d.Run;
+            });
+          chart
+            .dimension(runDimension)
+            .group(speedSumGroup)
+            .width(768)
+            .height(480)
+            .innerRadius(100)
+            .cap(4)
+            .label(function(d) {
+              console.log(d);
+              if (d.key === 'Others') {
+                return d.key;
+              }
+              return 'run-' + d.key;
+            })
+            .colors(d3.scale.ordinal().range(['red', 'green', 'blue']))
+            .legend(
+              dc.legend().legendText(function(d) {
+                console.log(d);
+                if (d.name === 'Others') {
+                  return d.name;
+                }
+                return 'run-' + d.name;
+              })
+            );
+
+          chart.render();
+          // dc.renderAll();
+        });
+      </script>
+    </div>
+  </body>
+</html>
